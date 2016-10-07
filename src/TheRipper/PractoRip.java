@@ -16,7 +16,6 @@ import javax.net.ssl.HttpsURLConnection;
 import org.unbescape.html.HtmlEscape;
 
 public class PractoRip{
-    private final static String SWEET_DATA3 = "";
     private String SWEET_DATA2 = "";
     private String SWEET_DATA = "";
     private String time_Data = "";
