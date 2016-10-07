@@ -25,7 +25,7 @@ public class PractoRip{
     private LinkedHashMap<String, String[]> clinicMap = new LinkedHashMap<>();
     private LinkedHashMap<String,String> datum = new LinkedHashMap<>();
     //private final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36";
-    private final String USER_AGENT = "RocketBot/1.9";
+    private final String USER_AGENT = "RocketBot/2.0";
     public static void main(String args[])throws IOException{
         try{
             if(args[0].equalsIgnoreCase("n")){
