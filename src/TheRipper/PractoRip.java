@@ -16,29 +16,39 @@ import javax.net.ssl.HttpsURLConnection;
 import org.unbescape.html.HtmlEscape;
 
 public class PractoRip{
-    private final static String SWEET_DATA3 = "";
     private String SWEET_DATA2 = "";
     private String SWEET_DATA = "";
     private String time_Data = "";
     private String doc_Data = "";
     private int pitbull = 1;
     private LinkedHashMap<String, String[]> clinicMap = new LinkedHashMap<>();
-    //private final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.113 Safari/537.36";
-    private final String USER_AGENT = "RocketBot/1.7";
+    private LinkedHashMap<String,String> datum = new LinkedHashMap<>();
+    //private final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36";
+    private final String USER_AGENT = "RocketBot/2.0";
     public static void main(String args[])throws IOException{
         try{
             if(args[0].equalsIgnoreCase("n")){
                 final String[] LOC_CITY = {"batangas","caloocan","cavite","cebu-city","las-pinas","makati","malabon","mandaluyong","manila","marikina","muntinlupa","navotas","paranaque","pasay","pasig","pateros","quezon","san-juan","taguig","valenzuela"};
+                PractoRip jes = new PractoRip();
                 for(int y=0;y<20;y++){
                     int x = 1;
                     System.out.println("City : "+LOC_CITY[y]);
-                    while(new PractoRip().testIt(x++,LOC_CITY[y]));
+                    while(jes.testIt(x++,LOC_CITY[y]));
                 }
-                    FileWriter writer = new FileWriter("doctorlist.txt");
-                    writer.append(SWEET_DATA3);
-                    writer.flush();
-                    writer.close();
-                    System.out.println("Data compiled.");
+                Set set2 = jes.datum.entrySet();
+                int count = 1;
+                String mads = "";
+                Iterator iterator2 = set2.iterator();
+                while(iterator2.hasNext()){
+                    Map.Entry mentry2 = (Map.Entry)iterator2.next();
+                    jes.SWEET_DATA+="https://www.practo.com/philippines/doctor/"+mentry2.getKey()+"\n";
+                }
+
+                FileWriter writer = new FileWriter("doctorlist.txt");
+                writer.append(jes.SWEET_DATA);
+                writer.flush();
+                writer.close();
+                System.out.println("Data compiled.");
             }
             else if(args[0].equalsIgnoreCase("c")){
                 PractoRip op = new PractoRip();
@@ -87,6 +97,7 @@ public class PractoRip{
                 writer2.append(SWEET_DATA2);
                 writer2.flush();
                 SWEET_DATA2 = "";
+                System.out.println(time_Data);
                 timeWrite.append(time_Data);
                 timeWrite.flush();
                 time_Data = "";
@@ -119,10 +130,11 @@ public class PractoRip{
         String heto = "";
         
         try{
+            
             heto = con.getResponseCode()+"";
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
-            int count = 0, count2 = 0, therock = 0;
+            int count = 0, count2 = 0;
             String[][] rawData = new String[50][13];
             String[] rawData2 = new String[50];
             String[] clinicArray = new String[3];
@@ -130,6 +142,7 @@ public class PractoRip{
             //boolean check = false;
             String day = "";
             while ((inputLine = in.readLine()) != null){
+                
                 inputLine = HtmlEscape.unescapeHtml(inputLine);
                 if(inputLine.contains("<h1 title=\"")){
                     System.out.println(charRip(inputLine,0));
@@ -141,7 +154,15 @@ public class PractoRip{
                     inputLine = in.readLine();
                     System.out.println(charRip(inputLine,2));
                     rawData[count][1] = charRip(inputLine,2);
-                    doc_Data += charRip(inputLine,2)+"\n";
+                    try{
+                        doc_Data += charRip(inputLine,2);
+                    }
+                    catch(Exception e){
+                        doc_Data += "\"\"";
+                    }
+                    finally{
+                        doc_Data += "\n";
+                    }
                 }
                 if(inputLine.contains("strong black")){
                     clinicArray[0] = charRip(inputLine,2);
@@ -152,7 +173,6 @@ public class PractoRip{
                     clinicArray[1] = charRip(inputLine,3);
                     System.out.println(charRip(inputLine,3));
                     rawData[count][3] = charRip(inputLine,3);
-                    
                 }
                 if(inputLine.contains("<h2 title=\"")){
                     clinicArray[2] = charRip(inputLine,1);
@@ -160,7 +180,7 @@ public class PractoRip{
                     rawData[count][4] = charRip(inputLine,1);
                 }
                 if(inputLine.contains("streetAddress")){
-                    clinicMap.put(charRip(inputLine,2), clinicArray);
+                    clinicMap.put(charRip(inputLine.replaceAll("\"", ""),2), clinicArray);
                     for(String thing: clinicArray){
                         System.out.println(thing);
                     }
@@ -245,6 +265,9 @@ public class PractoRip{
                         SWEET_DATA2 += rawData2[y]+",";
                     SWEET_DATA2 += rawData2[1] + "\n";
                 }
+                if(inputLine.contains("report-error-row"))
+                    break;
+                
             }
             in.close();
 
@@ -261,45 +284,25 @@ public class PractoRip{
             e.printStackTrace();
         }
     }
-    /*
-    private void timeDrink2(String a, String b, String c, String d){
-        String[] timeThing = new String[4];
-        timeThing[0]=a;
-        timeThing[1]=b;
-        timeThing[2]=c;
-        timeThing[3]=""+(Integer.getInteger(d)-6);
-        try(FileWriter writer = new FileWriter("doctortimes.csv",true)){
-            for(int i=0;i<timeThing.length-1;i++)
-                time_Data += timeThing[i]+",";
-            
-            time_Data timeThing[3]+"\n");
-            writer.flush();
-            writer.close();
-            //System.out.println("Data compiled.");
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-    */
     private void timeDrink(String a,String b ,String times,String d){
         String[] timeThing = new String[5];
         timeThing[0]=a;
         timeThing[1]=b;
         timeThing[2]="";
-        //System.out.println(times);
         timeThing[3]=""+(Integer.parseInt(d)-6);
         String[] ina = times.replaceAll("\"", "").split(" ");
         String temps = "";
         for(int i=0;i<ina.length;i++){
-            //System.out.print(ina[i]);
+            //System.out.println(ina[i]+"holy");
             try{
                 
-                if(ina[i].contains("(\\d{1,}:\\d{2}")){
-                    if(ina[i-1].contains("[A-z][A-z]")){
+                if(ina[i].matches("\\d?\\d:\\d{2}")){
+                    //System.out.println("PERL");
+                    if(ina[i-1].matches("[A-z][A-z]")){
+                        System.out.println("HAHAHA");
                         temps += "-";
-                        temps += ina[i].trim();
                     }
+                    temps += ina[i].trim();
                 }
                 else{
                     temps += ina[i].trim();
@@ -312,38 +315,37 @@ public class PractoRip{
         //System.out.println(temps+"d");
         try{ 
             String[] matcha = temps.split("-");
-            //System.out.println("BONERS:"+matcha.length);
             int reset = 1;
             for(int i=0;i<matcha.length;i++){
-                String datum = matcha[i].toUpperCase();
-                if(datum.contains("PM")){
-                    datum = datum.replaceAll("[a-zA-Z]{2}", "").trim();
-                    String de[] = datum.split("\\:");
-                    //TANGINGA MO TIME
-                    datum = ""+(Integer.parseInt(de[0])+12);
-                    datum += de[1];
+                
+                if(matcha[i].contains("PM")){
+                    //System.out.println("lunch po");
+                    String temp[] = matcha[i].split(":");
+                    if(!temp[0].contains("12")){
+                        //System.out.println("Test: "+temp[0]);
+                        temp[0] = ""+(Integer.parseInt(temp[0])+12);
+                    }
+                    matcha[i]=temp[0]+":"+temp[1];
+                    //timeThing[2] = "e";
                 }
-                else{
-                    datum = datum.replaceAll("[a-zA-Z]{2}", "").trim();
+                if(matcha[i].contains("AM")&&(matcha[i].split(":")[0]).contains("12")){
+                    String temp[] = matcha[i].split(":");
+                    matcha[i] = (Integer.parseInt(temp[0])+12)+":"+temp[1];
                 }
-                datum = "\""+datum+"\"";
-                timeThing[2] +=datum;
+                timeThing[2] += "\""+matcha[i].replaceAll("[A-z][A-z]", "")+"\"";
                 if(reset==1)
-                    timeThing[2]+=",";
+                    timeThing[2]+= ",";
                 if(reset==2){
                     reset = 0;
                     for(int x=0;x<timeThing.length-2;x++){
-                        //System.out.print(timeThing[x]);
-                        time_Data += timeThing[x]+",";
+                        //System.out.println(timeThing[x]);
+                        time_Data+=timeThing[x]+",";
                     }
-                    
-                    time_Data += "\""+timeThing[3] + "\"\n";
-                    //System.out.println(time_Data);
+                    time_Data+=timeThing[3]+"\n";
+                    timeThing[2] = "";
                 }
                 reset++;
-              
             }
-            
             
         }
         catch(Exception e){
@@ -366,7 +368,7 @@ public class PractoRip{
               if(x==0)
                 mads+=count+",";
               if(x==tool.length-1){
-                mads+=mentry2.getKey()+",";
+                mads+= ""+mentry2.getKey()+",";
                 mads+=tool[x]+"\n";
               }
               else
@@ -397,7 +399,7 @@ public class PractoRip{
         Pattern pattern = Pattern.compile("<span href=\"((.*))\" class=\"block lh_1\">");
         Matcher pod = pattern.matcher(input);
         pod.find();
-        return pod.group(1);
+        return pod.group(1).replaceAll("https:\\/\\/www.practo\\.com\\/philippines\\/.*\\/doctor\\/", "");
     }
     private String charRip(String input,int d){
         Pattern patterns[] = new Pattern[4];
@@ -420,25 +422,34 @@ public class PractoRip{
         //return "";
     }
     private HttpsURLConnection startCon(String urlin){
+        
         try{
             URL url = new URL(urlin);
             HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
             con.setConnectTimeout(30000);
             con.setRequestMethod("GET");
             con.setRequestProperty("User-Agent", USER_AGENT);
+            con.setReadTimeout(10000);
+            //con.setRequestProperty(urlin, urlin);
             if(con.getResponseCode()==200){
                 return con;
             }
+            else{
+                System.out.println(con.getResponseCode()+"");
+            }
         }
         catch(Exception e){
-            System.out.println("sad");
+            System.out.println("sad:");
+            e.printStackTrace();
             //return con;
         }
         return null;
     }
     private boolean testIt(int pageNo,String loc){
         boolean verdict = true;
-        String https_url = "https://www.practo.com/philippines/"+loc+"?page="+pageNo;
+        //String https_url = "https://www.practo.com/philippines/"+loc+"?page="+pageNo;
+        String https_url = "https://www.practo.com/philippines/"+loc+"/doctors?page="+pageNo;
+        System.out.println(https_url);
         //URL url;
         try{
             HttpsURLConnection con = null;
@@ -449,19 +460,14 @@ public class PractoRip{
                     System.out.println("Connection Established");
                     break;
                 }
+                else{
+                    System.out.println("Fail");
+                }
             }
-                //print_https_cert(con);
-                /*// optional default is GET
-                 con.setRequestMethod("GET");
-
-                //add request header
-                con.setRequestProperty("User-Agent", USER_AGENT);
-
-                */
-
-                int responseCode = con.getResponseCode();
+         
+                //int responseCode = con.getResponseCode();
                 //System.out.println("\nSending 'GET' request to URL : " + url);
-                System.out.println("Response Code : " + responseCode);
+                //System.out.println("Response Code : " + responseCode);
                 System.out.println("Page No : "+pageNo);
 
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -469,21 +475,23 @@ public class PractoRip{
                 int count = 0, count2 = 0;
 
                 while ((inputLine = in.readLine()) != null){
-                        if(inputLine.contains("block lh_1")){
-                                count++;
-                                System.out.println(charRip(inputLine)+count2);
-                                SWEET_DATA += charRip(inputLine)+"\n";
-
-                                //I GOT NINE LIVES CATS EYES BACK IN BLAAAACCK
-                        }
-                        count2++;
-                        //System.out.println(count2);
-                        if(count2>=1500&&count==0){
-                                //todo: exit code
-                                //System.out.println("NO DATA");
-                                verdict = false;
-                                break;
-                        }
+                    if(inputLine.contains("block lh_1")){
+                        count++;
+                        System.out.println(charRip(inputLine));
+                        datum.put(charRip(inputLine), "");
+                        //SWEET_DATA += charRip(inputLine)+"\n";
+                    }
+                    if(inputLine.contains("paginator")&&count==0){
+                        verdict = false;
+                        break;
+                    }
+                    if(inputLine.contains("paginator"))
+                        break;
+                    /*count2++;
+                    if(count2>=2700||count==0){
+                        verdict = false;
+                        break;
+                    }*/
                 }
 
                 in.close();
@@ -501,7 +509,7 @@ public class PractoRip{
       } catch (IOException e) {
              e.printStackTrace();
       }*/ catch(Exception e){
-                  //e.printStackTrace();
+                  e.printStackTrace();
                   verdict = false;
           }
           return verdict;
